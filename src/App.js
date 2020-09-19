@@ -83,7 +83,7 @@ class App extends Component {
   onButtonSubmit = () => {
     this.setState({imageUrl: this.state.input});
       fetch('https://guarded-wildwood-64753.herokuapp.com/imageurl', {
-            method: 'put',
+            method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
               input: this.state.input,
