@@ -1,18 +1,15 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Particles from 'react-particles-js';
+import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import Navigation from './components/Navigation/Navigation';
 import Signin from './components/Signin/Signin';
 import Register from './components/Register/Register';
-import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import Logo from './components/Logo/Logo';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
 import Rank from './components/Rank/Rank';
 import './App.css';
 
-
-
-
-const particlesOptions ={
+const particlesOptions = {
   particles: {
     number: {
       value: 30,
@@ -25,8 +22,7 @@ const particlesOptions ={
 }
 
 const initialState = {
-
-  input:'',
+  input: '',
   imageUrl: '',
   box: {},
   route: 'signin',
@@ -38,25 +34,23 @@ const initialState = {
     entries: 0,
     joined: ''
   }
-    
 }
 
 class App extends Component {
-  constructor(){
+  constructor() {
     super();
-    this.state=initialState;
+    this.state = initialState;
   }
 
   loadUser = (data) => {
-    this.setState ({user: {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        entries: data.entries,
-        joined: data.joined
+    this.setState({user: {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      entries: data.entries,
+      joined: data.joined
     }})
   }
-
 
   calculateFaceLocation = (data) => {
     const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
@@ -72,38 +66,38 @@ class App extends Component {
   }
 
   displayFaceBox = (box) => {
-    // console.log(box);
-    this.setState({box});
+    this.setState({box: box});
   }
 
-  onInputChange =(event)=> {
+  onInputChange = (event) => {
     this.setState({input: event.target.value});
   }
 
   onButtonSubmit = () => {
     this.setState({imageUrl: this.state.input});
-      fetch('https://guarded-wildwood-64753.herokuapp.com/imageurl', {
-            method: 'post',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              input: this.state.input,
-            })
-          })
+      fetch('http://localhost:3000/imageurl', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          input: this.state.input
+        })
+      })
       .then(response => response.json())
-      .then((response) => {
-        if(response) {
-          fetch('https://guarded-wildwood-64753.herokuapp.com/image', {
+      .then(response => {
+        if (response) {
+          fetch('http://localhost:3000/image', {
             method: 'put',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-              id: this.state.user.id,
+              id: this.state.user.id
             })
           })
-          .then(response => response.json())
-          .then(count => {
-            this.setState(Object.assign(this.state.user, { entries: count }))
-          })
-          .catch(console.log)
+            .then(response => response.json())
+            .then(count => {
+              this.setState(Object.assign(this.state.user, { entries: count}))
+            })
+            .catch(console.log)
+
         }
         this.displayFaceBox(this.calculateFaceLocation(response))
       })
@@ -111,46 +105,44 @@ class App extends Component {
   }
 
   onRouteChange = (route) => {
-    if (route === 'signout'){
+    if (route === 'signout') {
       this.setState(initialState)
-    } else if (route === 'home'){
+    } else if (route === 'home') {
       this.setState({isSignedIn: true})
     }
     this.setState({route: route});
   }
 
-
   render() {
     const { isSignedIn, imageUrl, route, box } = this.state;
     return (
       <div className="App">
-        <Particles className='particles'
-              params={particlesOptions}
-              
-            />
-      
-          <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange}/>
-        {route === 'home' 
-          ? 
-            <div>
+         <Particles className='particles'
+          params={particlesOptions}
+        />
+        <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange} />
+        { route === 'home'
+          ? <div>
               <Logo />
-              <Rank name={this.state.user.name} entries={this.state.user.entries}/>
-              <ImageLinkForm 
-              onInputChange={this.onInputChange} 
-              onButtonSubmit={this.onButtonSubmit} />
-              <FaceRecognition box={box} imageUrl={imageUrl}/>
+              <Rank
+                name={this.state.user.name}
+                entries={this.state.user.entries}
+              />
+              <ImageLinkForm
+                onInputChange={this.onInputChange}
+                onButtonSubmit={this.onButtonSubmit}
+              />
+              <FaceRecognition box={box} imageUrl={imageUrl} />
             </div>
-          :(
-            route === 'signin' 
-            ? <Signin loadUser = {this.loadUser} onRouteChange={this.onRouteChange}/>  
-            : <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange}/> 
+          : (
+             route === 'signin'
+             ? <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
+             : <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
             )
-          
-          
-      }
+        }
       </div>
     );
-  } 
+  }
 }
 
 export default App;
